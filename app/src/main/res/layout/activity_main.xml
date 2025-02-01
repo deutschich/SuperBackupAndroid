@@ -9,19 +9,25 @@
         android:id="@+id/backup_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Backup erstellen" />
+        android:text="Create Backup" />
 
     <Button
         android:id="@+id/restore_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Backup wiederherstellen"
+        android:text="Restore Backup"
         android:layout_marginTop="16dp" />
     <Button
         android:id="@+id/select_directory_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Verzeichnis auswählen"
+        android:text="Select Output Directory"
         android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="122dp"
+        android:text="The Output Directory is the Directory, the files copied in.                                                                                                       This project is © deutschich 2025" />
 
 </LinearLayout>

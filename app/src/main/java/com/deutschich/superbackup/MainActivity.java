@@ -1,8 +1,10 @@
 package com.deutschich.superbackup;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -132,10 +134,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Methode zum Kopieren von Dateien
+    // Holt den Dateinamen aus einer Uri
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index != -1) {
+                        result = cursor.getString(index);
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getLastPathSegment();
+        }
+        return result;
+    }
+
+    // Holt den MIME-Typ einer Datei basierend auf ihrer Uri
+    private String getMimeType(Uri uri) {
+        String mimeType = getContentResolver().getType(uri);
+        return mimeType != null ? mimeType : "application/octet-stream";
+    }
+
     private void copyFile(Uri sourceUri, DocumentFile targetDir) {
         try {
+            // Den Original-Dateinamen ermitteln
+            String fileName = getFileName(sourceUri);
+            if (fileName == null) {
+                showToast("Fehler: Dateiname konnte nicht ermittelt werden.");
+                return;
+            }
+
+            // Die Datei im Zielverzeichnis erstellen
+            DocumentFile targetFile = targetDir.createFile(getMimeType(sourceUri), fileName);
+            if (targetFile == null) {
+                showToast("Fehler beim Erstellen der Datei.");
+                return;
+            }
+
+            // Datei kopieren
             InputStream inputStream = getContentResolver().openInputStream(sourceUri);
-            DocumentFile targetFile = targetDir.createFile("application/octet-stream", "backup.txt");
             OutputStream outputStream = getContentResolver().openOutputStream(targetFile.getUri());
             if (inputStream == null || outputStream == null) {
                 showToast("Fehler beim Öffnen der Datei.");
@@ -150,10 +191,13 @@ public class MainActivity extends AppCompatActivity {
 
             inputStream.close();
             outputStream.close();
+
+            showToast("Datei gesichert: " + fileName);
         } catch (IOException e) {
             showToast("Fehler beim Kopieren der Datei: " + e.getMessage());
         }
     }
+
 
     // Wiederherstellungs-Methode für einen gesamten Ordner
     private void performRestore(Uri backupUri) {
