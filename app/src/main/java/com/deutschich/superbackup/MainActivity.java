@@ -115,32 +115,56 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Rekursive Backup-Methode: Kopiert den Inhalt des Quellordners in das Zielverzeichnis
-    private void performBackup(Uri sourceUri, DocumentFile targetDir) {
-        DocumentFile sourceDir = DocumentFile.fromTreeUri(this, sourceUri);
-        if (sourceDir == null || !sourceDir.isDirectory()) {
-            showToast("Der ausgewählte Quellordner ist ungültig.");
-            return;
-        }
+    private void performBackup(final Uri sourceUri, final DocumentFile targetDir) {
+        // Backup in einem neuen Thread ausführen, um den UI-Thread nicht zu blockieren
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DocumentFile sourceDir = DocumentFile.fromTreeUri(MainActivity.this, sourceUri);
+                if (sourceDir == null || !sourceDir.isDirectory()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showToast("Der ausgewählte Quellordner ist ungültig.");
+                        }
+                    });
+                    return;
+                }
 
-        // Erstelle einen Ordner im Zielverzeichnis mit dem gleichen Namen wie der Quellordner
-        DocumentFile newTargetDir = targetDir.createDirectory(sourceDir.getName());
-        if (newTargetDir == null) {
-            showToast("Fehler beim Erstellen des Zielordners für " + sourceDir.getName());
-            return;
-        }
+                // Erstelle einen Ordner im Zielverzeichnis mit dem gleichen Namen wie der Quellordner
+                DocumentFile newTargetDir = targetDir.createDirectory(sourceDir.getName());
+                if (newTargetDir == null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showToast("Fehler beim Erstellen des Zielordners für " + sourceDir.getName());
+                        }
+                    });
+                    return;
+                }
 
-        // Durchlaufe alle Dateien und Unterordner im Quellordner
-        for (DocumentFile child : sourceDir.listFiles()) {
-            if (child.isDirectory()) {
-                // Rekursiver Aufruf für Unterordner
-                performBackup(child.getUri(), newTargetDir);
-            } else {
-                // Kopiere die Datei in das aktuelle Zielverzeichnis
-                copyFile(child.getUri(), newTargetDir);
+                // Durchlaufe alle Dateien und Unterordner im Quellordner
+                for (DocumentFile file : sourceDir.listFiles()) {
+                    if (file.isDirectory()) {
+                        // Rekursiver Aufruf für Unterordner
+                        performBackup(file.getUri(), newTargetDir);
+                    } else {
+                        // Datei kopieren
+                        copyFile(file.getUri(), newTargetDir);
+                    }
+                }
+
+                // Nach Abschluss im UI-Thread benachrichtigen
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showToast("Backup von Ordner " + sourceDir.getName() + " erfolgreich!");
+                    }
+                });
             }
-        }
-        showToast("Backup von Ordner " + sourceDir.getName() + " erfolgreich!");
+        }).start();
     }
+
 
     // Rekursive Wiederherstellungs-Methode: Kopiert den Inhalt eines Backup-Ordners in das Zielverzeichnis
     private void performRestore(Uri backupUri, DocumentFile targetDir) {
@@ -174,7 +198,12 @@ public class MainActivity extends AppCompatActivity {
             // Hole den Originaldateinamen
             String fileName = getFileName(sourceUri);
             if (fileName == null) {
-                showToast("Fehler: Dateiname konnte nicht ermittelt werden.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showToast("Fehler: Dateiname konnte nicht ermittelt werden.");
+                    }
+                });
                 return;
             }
             // Bestimme den MIME-Typ
@@ -182,30 +211,43 @@ public class MainActivity extends AppCompatActivity {
             // Erstelle die Zieldatei im Zielverzeichnis
             DocumentFile targetFile = targetDir.createFile(mimeType, fileName);
             if (targetFile == null) {
-                showToast("Fehler beim Erstellen der Datei: " + fileName);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showToast("Fehler beim Erstellen der Datei: " + fileName);
+                    }
+                });
                 return;
             }
-
             InputStream inputStream = getContentResolver().openInputStream(sourceUri);
             OutputStream outputStream = getContentResolver().openOutputStream(targetFile.getUri());
             if (inputStream == null || outputStream == null) {
-                showToast("Fehler beim Öffnen der Datei: " + fileName);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showToast("Fehler beim Öffnen der Datei: " + fileName);
+                    }
+                });
                 return;
             }
-
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096];  // Größerer Puffer (4 KB)
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
-
             inputStream.close();
             outputStream.close();
-            // Optionale Meldung: showToast("Datei gesichert: " + fileName);
         } catch (IOException e) {
-            showToast("Fehler beim Kopieren der Datei: " + e.getMessage());
+            final String errorMsg = "Fehler beim Kopieren der Datei: " + e.getMessage();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showToast(errorMsg);
+                }
+            });
         }
     }
+
 
     // Hilfsmethode: Ermittelt den Dateinamen einer Uri
     private String getFileName(Uri uri) {
