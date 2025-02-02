@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">スーパーバックアップAndroid</string>
+
+    <string name="select_target_directory">ターゲットディレクトリを選択</string>
+    <string name="select_source_folder">ソースフォルダを選択</string>
+    <string name="backup">バックアップ</string>
+    <string name="restore">復元</string>
+
+    <string name="choose_target_directory">まずターゲットディレクトリを選択してください！</string>
+    <string name="choose_source_folder">ソースフォルダを選択してください！</string>
+    <string name="backup_successful">バックアップが成功しました！</string>
+    <string name="restore_successful">復元が成功しました！</string>
+    <string name="folder_invalid">選択されたフォルダは無効です。</string>
+    <string name="file_copy_error">ファイルのコピー中にエラー：%1$s</string>
+    <string name="file_not_found">ソースファイルが存在しません。</string>
+
+    <string name="directory_selected">ターゲットディレクトリが選択されました：%1$s</string>
+    <string name="folder_selected">ソースフォルダが選択されました：%1$s</string>
+</resources>

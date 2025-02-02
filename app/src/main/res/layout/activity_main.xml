@@ -10,33 +10,34 @@
         android:id="@+id/select_target_directory_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Target Directory" />
+        android:text="@string/select_target_directory" />
 
     <!-- Button zum Auswählen des Quellordners -->
     <Button
         android:id="@+id/select_source_folder_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select source directory" />
+        android:text="@string/select_source_folder" />
 
     <!-- Button für Backup -->
     <Button
         android:id="@+id/backup_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="create Backup" />
+        android:text="@string/backup" />
 
     <!-- Button für Wiederherstellung -->
     <Button
         android:id="@+id/restore_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="restore backup" />
+        android:text="@string/restore" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="122dp"
+        android:fontFamily="sans-serif"
         android:text="Thanks for using my tool!                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        This project is © deutschich 2025" />
 
 </LinearLayout>

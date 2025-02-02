@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SuperBackupAndroid</string>
+
+    <string name="select_target_directory">Seleziona directory di destinazione</string>
+    <string name="select_source_folder">Seleziona cartella di origine</string>
+    <string name="backup">Backup</string>
+    <string name="restore">Ripristina</string>
+
+    <string name="choose_target_directory">Seleziona prima una directory di destinazione!</string>
+    <string name="choose_source_folder">Seleziona una cartella di origine!</string>
+    <string name="backup_successful">Backup eseguito con successo!</string>
+    <string name="restore_successful">Ripristino eseguito con successo!</string>
+    <string name="folder_invalid">La cartella selezionata non è valida.</string>
+    <string name="file_copy_error">Errore nella copia del file: %1$s</string>
+    <string name="file_not_found">Il file sorgente non esiste.</string>
+
+    <string name="directory_selected">Directory di destinazione selezionata: %1$s</string>
+    <string name="folder_selected">Cartella di origine selezionata: %1$s</string>
+</resources>

@@ -16,16 +16,16 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_PICK_TARGET_DIRECTORY = 1;
     private static final int REQUEST_CODE_PICK_SOURCE_FOLDER = 2;
-    private Uri targetDirectoryUri = null; // Zielverzeichnis (wo das Backup gespeichert wird)
-    private Uri sourceFolderUri = null;    // Quellordner (der gesichert werden soll)
-    private boolean isBackupOperation = true; // true: Backup, false: Restore (für Wiederherstellung)
+    private Uri targetDirectoryUri = null; // Zielverzeichnis, in das das Backup gespeichert bzw. von dem wiederhergestellt wird
+    private Uri sourceFolderUri = null;    // Quellordner, der gesichert werden soll (oder der das Backup enthält)
+    private boolean isBackupOperation = true; // true = Backup, false = Wiederherstellung
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Button, um das Zielverzeichnis auszuwählen
+        // Button zum Auswählen des Zielverzeichnisses
         Button selectTargetDirButton = findViewById(R.id.select_target_directory_button);
         selectTargetDirButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Button, um den Quellordner auszuwählen (für Backup oder Wiederherstellung)
+        // Button zum Auswählen des Quellordners
         Button selectSourceFolderButton = findViewById(R.id.select_source_folder_button);
         selectSourceFolderButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,14 +50,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 isBackupOperation = true;
                 if (targetDirectoryUri == null) {
-                    showToast("Bitte wählen Sie zuerst ein Zielverzeichnis aus!");
+                    showToast(getString(R.string.choose_target_directory));
                     return;
                 }
                 if (sourceFolderUri == null) {
-                    showToast("Bitte wählen Sie einen Quellordner aus, der gesichert werden soll!");
+                    showToast(getString(R.string.choose_source_folder));
                     return;
                 }
-                // Starte den rekursiven Backup-Vorgang
                 DocumentFile targetDir = DocumentFile.fromTreeUri(MainActivity.this, targetDirectoryUri);
                 performBackup(sourceFolderUri, targetDir);
             }
@@ -70,14 +69,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 isBackupOperation = false;
                 if (targetDirectoryUri == null) {
-                    showToast("Bitte wählen Sie zuerst ein Zielverzeichnis aus!");
+                    showToast(getString(R.string.choose_target_directory));
                     return;
                 }
                 if (sourceFolderUri == null) {
-                    showToast("Bitte wählen Sie einen Ordner aus, der das Backup enthält!");
+                    showToast(getString(R.string.choose_source_folder));
                     return;
                 }
-                // Starte den rekursiven Wiederherstellungs-Vorgang
                 DocumentFile targetDir = DocumentFile.fromTreeUri(MainActivity.this, targetDirectoryUri);
                 performRestore(sourceFolderUri, targetDir);
             }
@@ -98,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_CODE_PICK_SOURCE_FOLDER);
     }
 
-    // Callback nach Auswahl von Verzeichnissen
+    // Callback nach Auswahl von Ziel- oder Quellordner
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -106,82 +104,49 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = data.getData();
             if (requestCode == REQUEST_CODE_PICK_TARGET_DIRECTORY) {
                 targetDirectoryUri = uri;
-                showToast("Zielverzeichnis ausgewählt: " + uri.getPath());
+                showToast(String.format(getString(R.string.directory_selected), uri.getPath()));
             } else if (requestCode == REQUEST_CODE_PICK_SOURCE_FOLDER) {
                 sourceFolderUri = uri;
-                showToast("Quellordner ausgewählt: " + uri.getPath());
+                showToast(String.format(getString(R.string.folder_selected), uri.getPath()));
             }
         }
     }
 
     // Rekursive Backup-Methode: Kopiert den Inhalt des Quellordners in das Zielverzeichnis
-    private void performBackup(final Uri sourceUri, final DocumentFile targetDir) {
-        // Backup in einem neuen Thread ausführen, um den UI-Thread nicht zu blockieren
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DocumentFile sourceDir = DocumentFile.fromTreeUri(MainActivity.this, sourceUri);
-                if (sourceDir == null || !sourceDir.isDirectory()) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            showToast("Der ausgewählte Quellordner ist ungültig.");
-                        }
-                    });
-                    return;
-                }
-
-                // Erstelle einen Ordner im Zielverzeichnis mit dem gleichen Namen wie der Quellordner
-                DocumentFile newTargetDir = targetDir.createDirectory(sourceDir.getName());
-                if (newTargetDir == null) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            showToast("Fehler beim Erstellen des Zielordners für " + sourceDir.getName());
-                        }
-                    });
-                    return;
-                }
-
-                // Durchlaufe alle Dateien und Unterordner im Quellordner
-                for (DocumentFile file : sourceDir.listFiles()) {
-                    if (file.isDirectory()) {
-                        // Rekursiver Aufruf für Unterordner
-                        performBackup(file.getUri(), newTargetDir);
-                    } else {
-                        // Datei kopieren
-                        copyFile(file.getUri(), newTargetDir);
-                    }
-                }
-
-                // Nach Abschluss im UI-Thread benachrichtigen
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showToast("Backup von Ordner " + sourceDir.getName() + " erfolgreich!");
-                    }
-                });
+    private void performBackup(Uri sourceUri, DocumentFile targetDir) {
+        DocumentFile sourceDir = DocumentFile.fromTreeUri(this, sourceUri);
+        if (sourceDir == null || !sourceDir.isDirectory()) {
+            showToast(getString(R.string.folder_invalid));
+            return;
+        }
+        // Erstelle im Zielverzeichnis einen Ordner mit demselben Namen wie der Quellordner
+        DocumentFile newTargetDir = targetDir.createDirectory(sourceDir.getName());
+        if (newTargetDir == null) {
+            showToast(String.format(getString(R.string.file_copy_error), sourceDir.getName()));
+            return;
+        }
+        for (DocumentFile child : sourceDir.listFiles()) {
+            if (child.isDirectory()) {
+                performBackup(child.getUri(), newTargetDir);
+            } else {
+                copyFile(child.getUri(), newTargetDir);
             }
-        }).start();
+        }
+        showToast(getString(R.string.backup_successful));
     }
 
-
-    // Rekursive Wiederherstellungs-Methode: Kopiert den Inhalt eines Backup-Ordners in das Zielverzeichnis
+    // Rekursive Wiederherstellungs-Methode: Kopiert den Inhalt eines Backup-Ordners ins Zielverzeichnis
     private void performRestore(Uri backupUri, DocumentFile targetDir) {
         DocumentFile backupDir = DocumentFile.fromTreeUri(this, backupUri);
         if (backupDir == null || !backupDir.isDirectory()) {
-            showToast("Der ausgewählte Backup-Ordner ist ungültig.");
+            showToast(getString(R.string.folder_invalid));
             return;
         }
-
-        // Erstelle einen Ordner im Zielverzeichnis mit dem gleichen Namen wie der Backup-Ordner
         DocumentFile newTargetDir = targetDir.createDirectory(backupDir.getName());
         if (newTargetDir == null) {
-            showToast("Fehler beim Erstellen des Zielordners für " + backupDir.getName());
+            showToast(String.format(getString(R.string.file_copy_error), backupDir.getName()));
             return;
         }
-
-        // Durchlaufe alle Dateien und Unterordner im Backup-Ordner
         for (DocumentFile child : backupDir.listFiles()) {
             if (child.isDirectory()) {
                 performRestore(child.getUri(), newTargetDir);
@@ -189,48 +154,30 @@ public class MainActivity extends AppCompatActivity {
                 copyFile(child.getUri(), newTargetDir);
             }
         }
-        showToast("Wiederherstellung von Ordner " + backupDir.getName() + " erfolgreich!");
+        showToast(getString(R.string.restore_successful));
     }
 
-    // Kopiert eine Datei von der Quelle ins Zielverzeichnis und behält den Originalnamen und MIME-Typ bei
+    // Kopiert eine Datei vom Quell-URI in das Zielverzeichnis und behält den Originalnamen und MIME-Typ bei
     private void copyFile(Uri sourceUri, DocumentFile targetDir) {
         try {
-            // Hole den Originaldateinamen
             String fileName = getFileName(sourceUri);
             if (fileName == null) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showToast("Fehler: Dateiname konnte nicht ermittelt werden.");
-                    }
-                });
+                showToast(getString(R.string.file_not_found));
                 return;
             }
-            // Bestimme den MIME-Typ
             String mimeType = getMimeType(sourceUri);
-            // Erstelle die Zieldatei im Zielverzeichnis
             DocumentFile targetFile = targetDir.createFile(mimeType, fileName);
             if (targetFile == null) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showToast("Fehler beim Erstellen der Datei: " + fileName);
-                    }
-                });
+                showToast(String.format(getString(R.string.file_copy_error), fileName));
                 return;
             }
             InputStream inputStream = getContentResolver().openInputStream(sourceUri);
             OutputStream outputStream = getContentResolver().openOutputStream(targetFile.getUri());
             if (inputStream == null || outputStream == null) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showToast("Fehler beim Öffnen der Datei: " + fileName);
-                    }
-                });
+                showToast(String.format(getString(R.string.file_copy_error), fileName));
                 return;
             }
-            byte[] buffer = new byte[4096];  // Größerer Puffer (4 KB)
+            byte[] buffer = new byte[4096];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
@@ -238,21 +185,14 @@ public class MainActivity extends AppCompatActivity {
             inputStream.close();
             outputStream.close();
         } catch (IOException e) {
-            final String errorMsg = "Fehler beim Kopieren der Datei: " + e.getMessage();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showToast(errorMsg);
-                }
-            });
+            showToast(String.format(getString(R.string.file_copy_error), e.getMessage()));
         }
     }
 
-
-    // Hilfsmethode: Ermittelt den Dateinamen einer Uri
+    // Hilfsmethode: Ermittelt den Dateinamen aus der Uri
     private String getFileName(Uri uri) {
         String result = null;
-        if (uri.getScheme().equals("content")) {
+        if ("content".equals(uri.getScheme())) {
             try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
@@ -274,8 +214,9 @@ public class MainActivity extends AppCompatActivity {
         return mimeType != null ? mimeType : "application/octet-stream";
     }
 
-    // Einfache Methode, um Toast-Meldungen anzuzeigen
+    // Zeigt eine Toast-Nachricht an
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
+

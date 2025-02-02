@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سوبر باك اب للاندرويد</string>
+
+    <string name="select_target_directory">اختر دليل الوجهة</string>
+    <string name="select_source_folder">اختر مجلد المصدر</string>
+    <string name="backup">نسخ احتياطي</string>
+    <string name="restore">استعادة</string>
+
+    <string name="choose_target_directory">يرجى اختيار دليل الوجهة أولاً!</string>
+    <string name="choose_source_folder">يرجى اختيار مجلد المصدر!</string>
+    <string name="backup_successful">تم النسخ الاحتياطي بنجاح!</string>
+    <string name="restore_successful">تمت الاستعادة بنجاح!</string>
+    <string name="folder_invalid">المجلد المحدد غير صالح.</string>
+    <string name="file_copy_error">خطأ في نسخ الملف: %1$s</string>
+    <string name="file_not_found">الملف المصدر غير موجود.</string>
+
+    <string name="directory_selected">تم اختيار دليل الوجهة: %1$s</string>
+    <string name="folder_selected">تم اختيار مجلد المصدر: %1$s</string>
+</resources>

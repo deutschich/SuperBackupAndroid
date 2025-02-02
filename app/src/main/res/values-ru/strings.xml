@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SuperBackupAndroid</string>
+
+    <string name="select_target_directory">Выберите целевую папку</string>
+    <string name="select_source_folder">Выберите исходную папку</string>
+    <string name="backup">Создать резервную копию</string>
+    <string name="restore">Восстановить</string>
+
+    <string name="choose_target_directory">Пожалуйста, сначала выберите целевую папку!</string>
+    <string name="choose_source_folder">Пожалуйста, выберите исходную папку!</string>
+    <string name="backup_successful">Резервное копирование выполнено успешно!</string>
+    <string name="restore_successful">Восстановление выполнено успешно!</string>
+    <string name="folder_invalid">Выбранная папка недействительна.</string>
+    <string name="file_copy_error">Ошибка при копировании файла: %1$s</string>
+    <string name="file_not_found">Исходный файл не существует.</string>
+
+    <string name="directory_selected">Выбрана целевая папка: %1$s</string>
+    <string name="folder_selected">Выбрана исходная папка: %1$s</string>
+</resources>
