@@ -2,32 +2,41 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp">
 
     <Button
+        android:id="@+id/select_target_directory_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Target Directory" />
+
+    <!-- Button zum Auswählen des Quellordners -->
+    <Button
+        android:id="@+id/select_source_folder_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select source directory" />
+
+    <!-- Button für Backup -->
+    <Button
         android:id="@+id/backup_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Backup" />
+        android:text="create Backup" />
 
+    <!-- Button für Wiederherstellung -->
     <Button
         android:id="@+id/restore_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Restore Backup"
-        android:layout_marginTop="16dp" />
-    <Button
-        android:id="@+id/select_directory_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Output Directory"
-        android:layout_marginTop="16dp" />
+        android:text="restore backup" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="122dp"
-        android:text="The Output Directory is the Directory, the files copied in.                                                                                                       This project is © deutschich 2025" />
+        android:text="Thanks for using my tool!                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        This project is © deutschich 2025" />
 
 </LinearLayout>
